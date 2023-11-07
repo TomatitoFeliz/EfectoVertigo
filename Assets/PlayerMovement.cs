@@ -14,17 +14,28 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Rigidbody playerBody;
     [Space]
     [SerializeField] private float speed;
+    [SerializeField] Animator animator;
 
     private void Awake()
     {
+        animator = GetComponent<Animator>();
         cofreAnimator = GameObject.Find ("Cofre").GetComponent<Animator> ();
     }
     private void Update()
     {
-        playerMovementInput = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
+        playerMovementInput = new Vector3(Input.GetAxis("Horizontal") * 2, 0f, Input.GetAxis("Vertical") * 2);
         playerMouseInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         MovePlayer();
+
+        if (playerMovementInput.x != 0 || playerMovementInput.z > 0)
+        {
+            animator.SetBool("IsWalking", true);
+        }
+        else
+        {
+            animator.SetBool("IsWalking", false);
+        }
     }
 
     private void MovePlayer()
