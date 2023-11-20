@@ -5,15 +5,11 @@ using UnityEngine;
 public class CofreInteraction : MonoBehaviour
 {
     [SerializeField]
-    AnimationClip clipCofre;
-    [SerializeField]
-    Animation cofreAnimation;
-    [SerializeField]
-    GameObject cofre;
+    Animator cofreAnimator;
 
     private void Start()
     {
-        cofreAnimation = cofre.GetComponent<Animation>();
+        cofreAnimator = GameObject.Find("cofre").GetComponent<Animator>();
     }
     private void OnTriggerStay(Collider other)
     {
@@ -23,8 +19,7 @@ public class CofreInteraction : MonoBehaviour
             UnityEngine.Debug.Log("Estoy en el área");
             if (Input.GetKeyDown(KeyCode.E))
             {
-                cofreAnimation.clip = clipCofre;
-                cofreAnimation.Play();
+                cofreAnimator.Play("cofre");
             }
         }
     }
