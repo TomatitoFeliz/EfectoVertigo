@@ -1,71 +1,82 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
+using System.Threading;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private Vector3 playerMovementInput;
-    private Vector2 playerMouseInput;
-    public float mouseSesistivity = 5f;
-    public bool puedeAbrir = false;
-    Animator cofreAnimator;
-    AnimationClip clipCofre;
-    [SerializeField] private Rigidbody playerBody;
-    [Space]
-    [SerializeField] private float speed;
-    [SerializeField] Animator animator;
+    private CharacterController _controller;
 
-    private void Awake()
+    [SerializeField]
+    private float _playerSpeed = 5f;
+
+    [SerializeField]
+    private float _rotationSpeed = 10f;
+
+    [SerializeField]
+    private Camera _followCamera;
+
+    private Vector3 _playerVelocity;
+    private bool _groundedPlayer;
+
+    [SerializeField]
+    private float _jumpHeight = 1.0f;
+
+    [SerializeField]
+    private float _gravityValue = -9.81f;
+
+    [SerializeField]
+    Animator kirbyAnimator;
+    [SerializeField]
+    GameObject kirby;
+
+    private void Start()
     {
-        animator = GetComponent<Animator>();
-        cofreAnimator = GameObject.Find ("Cofre").GetComponent<Animator> ();
+        kirbyAnimator = kirby.GetComponent<Animator>();
+        _controller = GetComponent<CharacterController>();
     }
     private void Update()
     {
-        playerMovementInput = new Vector3(Input.GetAxis("Horizontal") * 2, 0f, Input.GetAxis("Vertical") * 2);
-        playerMouseInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
-
-        MovePlayer();
-
-        if (playerMovementInput.x != 0 || playerMovementInput.z > 0)
+        Movement();
+    }
+    void Movement()
+    {
+        _groundedPlayer = _controller.isGrounded;
+        if (_groundedPlayer && _playerVelocity.y < 0)
         {
-            animator.SetBool("IsWalking", true);
+            _playerVelocity.y = 0f;
+        }
+
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+
+        Vector3 movementInput = Quaternion.Euler(0, _followCamera.transform.eulerAngles.y, 0) * new Vector3(horizontalInput, 0, verticalInput);
+        Vector3 movementDirection = movementInput.normalized;
+
+        if(movementDirection != Vector3.zero)
+        {
+            Quaternion desiredRotation = Quaternion.LookRotation(movementDirection, Vector3.up);
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, _rotationSpeed * Time.deltaTime);
+        }
+
+        _controller.Move(movementDirection * _playerSpeed * Time.deltaTime);
+
+        if (Input.GetButtonDown("Jump") && _groundedPlayer)
+        {
+            _playerVelocity.y += Mathf.Sqrt(_jumpHeight * -3.0f * _gravityValue);
+        }
+
+        _playerVelocity.y += _gravityValue * Time.deltaTime;
+        _controller.Move(_playerVelocity * Time.deltaTime);
+
+        if (_controller.velocity.x != 0 || _controller.velocity.y != 0)
+        {
+            kirbyAnimator.SetBool("IsWalking", true);
         }
         else
         {
-            animator.SetBool("IsWalking", false);
+            kirbyAnimator.SetBool("IsWalking", false);
         }
     }
-
-    private void MovePlayer()
-    {
-        Vector3 moveVector = transform.TransformDirection(playerMovementInput) * speed;
-        playerBody.velocity = new Vector3(moveVector.x, playerBody.velocity.y, moveVector.z);
-
-        transform.Rotate(0f, playerMouseInput.x * mouseSesistivity, 0f);
-
-        if (puedeAbrir == true && Input.GetKeyDown(KeyCode.E))
-            {
-                UnityEngine.Debug.Log("me arde el ano");
-                cofreAnimator.Play("Armature|ArmatureAction");
-            puedeAbrir = false;
-            
-        }
-    }
-    private void OnTriggerEnter(Collider other)
-    {
-        UnityEngine.Debug.Log("joder que bueno esta el burro de shrek");
-        puedeAbrir = true;
-
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-
-        puedeAbrir = false;
-   
-    }       
-
-}           
-            
+}
