@@ -28,7 +28,6 @@ public class CameraMovement : MonoBehaviour
     private Vector2 _rotationXMinMax = new Vector2(-40, 40);
 
 
-
     private void Update()
     {
         float mouseX = Input.GetAxis("Mouse Y") * _mouseSensitivity;

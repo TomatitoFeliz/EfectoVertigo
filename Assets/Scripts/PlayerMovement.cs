@@ -70,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
         _playerVelocity.y += _gravityValue * Time.deltaTime;
         _controller.Move(_playerVelocity * Time.deltaTime);
 
-        if (_controller.velocity.x != 0 || _controller.velocity.y != 0)
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.S))
         {
             kirbyAnimator.SetBool("IsWalking", true);
         }
